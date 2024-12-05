@@ -3,15 +3,19 @@
 
 #include "sapi.h"        // <= Biblioteca sAPI
 
+
+
+void turn( void* params );
+
 int main( void )
 {
 
-	uint8_t receivedByte;
-
-   // ---------- CONFIGURACIONES ------------------------------
-
-   // Inicializar y configurar la plataforma
+	// ---------- CONFIGURACIONES ------------------------------
    boardConfig();
+
+   uartConfig(UART_USB, 9600);
+   uartInterrupt( UART_USB, TRUE );
+   uartCallbackSet( UART_USB, UART_RECEIVE, turn, NULL );
 
    pwmConfig(0, PWM_ENABLE);
 
@@ -19,46 +23,43 @@ int main( void )
    pwmConfig(PWM8, PWM_ENABLE_OUTPUT);
    pwmConfig(PWM9, PWM_ENABLE_OUTPUT);
 
-   uartConfig(UART_USB, 9600);
-
    // ---------- REPETIR POR SIEMPRE --------------------------
-   while( TRUE ) {
-
-	   if (uartReadByte(UART_USB, &receivedByte) == TRUE) {
-
-		   if (receivedByte == '1') {
-			   if (gpioRead(CIAA_BOARD_LED)) {
-		       		gpioWrite(CIAA_BOARD_LED, FALSE);
-			   } else {
-		       		gpioWrite(CIAA_BOARD_LED, TRUE);
-			   }
-		   }
-
-		   if (receivedByte == '2') {
-			   if (pwmRead(PWM7) == 0) {
-				   pwmWrite(PWM7, 255);
-			   } else {
-				   pwmWrite(PWM7, 0);
-			   }
-		   }
-
-		   if (receivedByte == '3') {
-			   if (pwmRead(PWM8) == 0) {
-				   pwmWrite(PWM8, 255);
-			   } else {
-				   pwmWrite(PWM8, 0);
-			   }
-		   }
-
-		   if (receivedByte == '4') {
-			   if (pwmRead(PWM9) == 0) {
-				   pwmWrite(PWM9, 255);
-			   } else {
-				   pwmWrite(PWM9, 0);
-			   }
-		   }
-	   }
-   }
+   while( TRUE ) {	}
 
    return 0;
+}
+
+void turn(void *p) {
+
+	switch( uartRxRead( UART_USB ) ) {
+	case '1':
+		if (gpioRead(CIAA_BOARD_LED)) {
+			gpioWrite(CIAA_BOARD_LED, FALSE);
+		} else {
+			gpioWrite(CIAA_BOARD_LED, TRUE);
+		}
+		break;
+	case '2':
+		if (pwmRead(PWM7) == 0) {
+			pwmWrite(PWM7, 255);
+		} else {
+			pwmWrite(PWM7, 0);
+		}
+		break;
+	case '3':
+		if (pwmRead(PWM8) == 0) {
+			pwmWrite(PWM8, 255);
+		} else {
+			pwmWrite(PWM8, 0);
+		}
+		break;
+	case '4':
+		if (pwmRead(PWM9) == 0) {
+			pwmWrite(PWM9, 255);
+		} else {
+			pwmWrite(PWM9, 0);
+		}
+		break;
+	}
+
 }
